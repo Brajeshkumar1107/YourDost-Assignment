@@ -1,4 +1,7 @@
-const BASE = "https://corsproxy.io/?https://reqres.in/api/users";
+// src/api/usersApi.js
+// Calls our Vercel API proxy instead of reqres.in directly
+
+const BASE = "/api/users";  // Local Vercel function
 
 export async function fetchAllUsers() {
   try {
@@ -9,6 +12,7 @@ export async function fetchAllUsers() {
     let users = json.data || [];
     const totalPages = json.total_pages || 1;
 
+    // Fetch remaining pages from our proxy
     const promises = [];
     for (let p = 2; p <= totalPages; p++) {
       promises.push(fetch(`${BASE}?page=${p}`).then(r => r.json()));
@@ -16,12 +20,12 @@ export async function fetchAllUsers() {
 
     const results = await Promise.all(promises);
     results.forEach(r => {
-      if (r.data) users = users.concat(r.data);
+      if (r && r.data) users = users.concat(r.data);
     });
 
     return users;
   } catch (err) {
-    console.error(err);
+    console.error("API Error:", err);
     throw err;
   }
 }
